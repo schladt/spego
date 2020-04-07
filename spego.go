@@ -5,56 +5,84 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 )
 
+// Config - struct to store configuration
+type Config struct {
+	PayloadPath string `yaml:"PayloadPath"`
+	OutputPath  string `yaml:"OutputPath"`
+	StubPath    string `yaml:"StubPath"`
+	Magic       string `yaml:"Magic"`
+}
+
 func main() {
-	outPath := "bin/out.exe"
-	payloadPath := "Z:\\projects\\spego\\payloads\\go-example\\go-example.exe"
-	stubPath := "Z:\\projects\\spego\\stubs\\bin\\spego-stub-windows-amd64.exe"
+	if len(os.Args) != 2 {
+		fmt.Printf("Usage:\n\t.\\%s config.yaml\n\n", filepath.Base(os.Args[0]))
+		log.Fatal("Wrong number of arguments")
+	}
+
+	// read in yaml config file
+	configBytes, err := ioutil.ReadFile(os.Args[1])
+	if err != nil {
+		log.Fatalf("Unable to read config file: %v", err)
+	}
+
+	config := Config{}
+	if err := yaml.Unmarshal(configBytes, &config); err != nil {
+		log.Fatalf("Unable to parse config file: %v", err)
+	}
+
+	fmt.Printf("Using payload path of %s\n", config.PayloadPath)
 
 	// Read payload
-	fmt.Println("Reading payload...")
-	payload, err := ioutil.ReadFile(payloadPath)
+	log.Printf("Reading payload %s", config.PayloadPath)
+	payload, err := ioutil.ReadFile(config.PayloadPath)
 	if err != nil {
+		log.Println("Unable to read payload.")
 		log.Fatalln(err)
 	}
 
 	// Read stub
-	fmt.Println("Reading stub...")
-	stub, err := ioutil.ReadFile(stubPath)
+	log.Printf("Reading stub %s", config.StubPath)
+	stub, err := ioutil.ReadFile(config.StubPath)
 	if err != nil {
+		log.Println("Unable to read stub file.")
 		log.Fatalln(err)
 	}
 
-	// magic string
-	magic := []byte("9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8")
-
-	// Open output file
-	f, err := os.Create(outPath)
+	// open output file
+	f, err := os.Create(config.OutputPath)
 	if err != nil {
+		log.Println("Unable to create output file.")
 		log.Fatalln(err)
 	}
 	defer f.Close()
 
 	// write stub
-	fmt.Println("Writing stub...")
+	log.Printf("Writing stub to %s", config.OutputPath)
 	if _, err := f.Write(stub); err != nil {
+		log.Println("Unable to write stub.")
 		log.Fatalln(err)
 	}
 
 	// write magic string
-	fmt.Println("Writing delimiter...")
-	if _, err := f.Write(magic); err != nil {
+	log.Printf("Writing delimiter to %s", config.OutputPath)
+	if _, err := f.Write([]byte(config.Magic)); err != nil {
+		log.Println("Unable to write delimiter.")
 		log.Fatalln(err)
 	}
 
 	// write payload
-	fmt.Println("Writing payload...")
+	log.Printf("Writing payload to %s", config.OutputPath)
 	if _, err := f.Write(payload); err != nil {
+		log.Println("Unable to write payload.")
 		log.Fatalln(err)
 	}
 
 	// finished
-	fmt.Printf("Complete. Output written to: %s\n", outPath)
+	log.Printf("Complete. Output written to: %s\n", config.OutputPath)
 
 }

@@ -1,0 +1,8 @@
+---
+# Yaml formatted configuration file for SPEGO
+
+# General Params
+PayloadPath: payloads\go-example\go-example.exe # Path of payload to encrypt
+StubPath: stubs\bin\spego-stub-windows-amd64.exe # Path to pre-compiled stub
+OutputPath: .\bin\out.exe # Final output 
+Magic: 9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8 # magic number used as delimiter. (must re-compile stub if changed)
