@@ -2,7 +2,43 @@
 # Yaml formatted configuration file for SPEGO
 
 # General Params
-PayloadPath: payloads\go-example\go-example.exe # Path of payload to encrypt
+PayloadPath: # payloads\go-example\go-example.exe # Path of payload to encrypt
 StubPath: stubs\bin\spego-stub-windows-amd64.exe # Path to pre-compiled stub
 OutputPath: .\bin\out.exe # Final output 
 Magic: 9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8 # magic number used as delimiter. (must re-compile stub if changed)
+
+# Encryption Params - all parameters are optional; only password is case-sensitive
+
+# preshared secret provided as command line argument to encrypted binary
+# set to null if using payload that expects it own command line args as this is passed to the child process (use custom env)
+Password: null
+# Target host environmental variables to appended to encryption key.
+# Do not add or remove keys list without updating stub (changing value is fine)
+Envs: 
+  SPEGOPASS: password
+  ALLUSERSPROFILE: null
+  APPDATA: null
+  COMPUTERNAME: DESKTOP-CEMSHP4
+  COMMONPROGRAMFILES: null
+  COMMONPROGRAMFILES(x86): null
+  COMSPEC: null
+  HOMEDRIVE: null
+  HOMEPATH: null
+  LOCALAPPDATA: null
+  LOGONSERVER: null
+  PATH: null
+  PATHEXT: null
+  PROGRAMFILES: null
+  PROGRAMFILES(X86): null
+  PROMPT: null
+  SystemDrive: null
+  SystemRoot: null
+  TEMP: null
+  TMP: null
+  USERDOMAIN: DESKTOP-CEMSHP4
+  USERNAME: null
+  USERPROFILE: C:\Users\mike
+  WINDIR: null
+  PUBLIC: null
+  PROGRAMDATA: null
+  PSModulePath: null

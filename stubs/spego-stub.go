@@ -8,18 +8,27 @@ package main
 import "C"
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/sha256"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"unsafe"
 )
 
 func main() {
 	// string used to delimit code boundry
 	magic := "9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8"
+
+	// read in args
+	passwordPtr := flag.String("password", "", "optional password")
+	flag.Parse()
 
 	// read in self
 	imagePath, err := filepath.Abs(os.Args[0])
@@ -35,18 +44,53 @@ func main() {
 	// search image on disk for magic string
 	re, err := regexp.Compile(magic)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
-	// get indexes and payload offset
+	// get indexes of env list and payload offset
 	indexes := re.FindAllIndex(selfBytes, -1)
+	envKeyStartIndex := indexes[len(indexes)-2][1]
+	envKeyStopIndex := indexes[len(indexes)-1][0]
 	payloadOffset := indexes[len(indexes)-1][1]
 
+	// get list of env keys used to construct encryption key
+	envKeyStr := string(selfBytes[envKeyStartIndex:envKeyStopIndex])
+	envKeys := strings.Split(envKeyStr, ":")
+
+	encKey := fmt.Sprintf("password:%s", *passwordPtr)
+	for _, v := range envKeys {
+		encKey = fmt.Sprintf("%s:%s:%s", encKey, strings.ToLower(v), strings.ToLower(os.Getenv(v)))
+	}
+	encKeySha256 := sha256.Sum256([]byte(encKey))
+
 	// create and launch payload
-	payload := selfBytes[payloadOffset:]
+	ciphertext := selfBytes[payloadOffset:]
+
+	// Decrypt Payload
+	c, err := aes.NewCipher(encKeySha256[:])
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(ciphertext) < nonceSize {
+		log.Fatalln(err)
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	payload, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// convert the args passed to this program into a C array of C strings
 	var cArgs []*C.char
+	os.Args = append([]string{os.Args[0]}, flag.Args()...)
 	for _, goString := range os.Args {
 		cArgs = append(cArgs, C.CString(goString))
 	}

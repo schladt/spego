@@ -1,8 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	if len(os.Args) > 1 {
+		fmt.Printf("Hello %v\n", os.Args[1:])
+	} else {
+		fmt.Println("Hello World!")
+	}
 	fmt.Println("This code was written in Go!")
 }
