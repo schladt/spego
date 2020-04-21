@@ -141,6 +141,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// write mage string ... again 
+	if _, err := f.Write([]byte(config.Magic)); err != nil {
+		log.Println("Unable to write third delimiter.")
+		log.Fatalln(err)
+	}
+
 	// finished
 	log.Printf("Complete. Output written to: %s\n", config.OutputPath)
 

