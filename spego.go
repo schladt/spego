@@ -61,16 +61,10 @@ func main() {
 
 	// Read stub from bindata
 	var stubName string
-	if config.PayloadType == "executable" {
-		stubName = "stubs/bin/spego-stub"
-	} else {
-		log.Fatalln("Unknown payload type.")
-	}
-
 	if config.PayloadArch == "windows-amd64" {
-		stubName = fmt.Sprintf("%s-%s", stubName, "windows-amd64.exe")
+		stubName = "stubs/bin/spego-stub-windows-amd64.exe"
 	} else if config.PayloadArch == "windows-386" {
-		stubName = fmt.Sprintf("%s-%s", stubName, "windows-386.exe")
+		stubName = "stubs/bin/spego-stub-windows-386.exe"
 	} else {
 		log.Fatalln("Unknown payload arch.")
 	}
@@ -95,6 +89,8 @@ func main() {
 			}
 		}
 	}
+	//add payload type as key
+	envKeys = fmt.Sprintf("%s:%s", envKeys, config.PayloadType)
 	encKeySha256 := sha256.Sum256([]byte(encKey))
 
 	// generate aes cipher black

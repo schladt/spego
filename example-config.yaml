@@ -2,9 +2,9 @@
 # Yaml formatted configuration file for SPEGO
 
 # General Params
-PayloadType: executable # current options: executable 
-PayloadArch: windows-386 # current options include windows-amd64, windows-386
-PayloadPath: payloads\c-example\c-example.exe # Path of payload to encrypt 
+PayloadType: shellcode # current options: executable, shellcode (saved as raw binary) 
+PayloadArch: windows-amd64 # current options include windows-amd64, windows-386
+PayloadPath: C:\Users\mike\payloads\20200422\payload64.bin # Path of payload to encrypt 
 OutputPath: .\bin\out.exe # Final output 
 Magic: 9BC5440033354F2EBEEED2E6083903390A39B15489892A199F86A17CFA0F55B8 # magic number used as delimiter (must be 64 characters)
 

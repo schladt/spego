@@ -3,28 +3,27 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOGET=$(GOCMD) get
 OS=$(shell go env GOOS)
-ARCH=$(shell go env GOARCH)
-EXT=$(shell go env GOEXE)
-BINARY_PATH=bin/$(BASE_NAME)-$(OS)-$(ARCH)$(EXT)
+# ARCH=$(shell go env GOARCH)
+# EXT=$(shell go env GOEXE)
+# BINARY_PATH=bin/$(BASE_NAME)-$(OS)-$(ARCH)$(EXT)
 
-all: build final
+all: build
 
 build:
-	$(GOBUILD) -v -ldflags="-s -w" -o $(BINARY_PATH) .
+	go env -w GOOS=windows
+	go env -w GOARCH=386
+	go env -w CC=i686-w64-mingw32-gcc
+	go env -w CGO_ENABLED=1
+	$(GOBUILD) -v -ldflags="-s -w" -o bin/$(BASE_NAME)-windows-386.exe .
+
+	go env -w GOARCH=amd64
+	go env -w CC=x86_64-w64-mingw32-gcc
+	go env -w CGO_ENABLED=1
+	$(GOBUILD) -v -ldflags="-s -w" -o bin/$(BASE_NAME)-windows-amd64.exe .
 
 run:
 	build
 	./$(BINARY_PATH)
 
-final:
-ifeq ($(OS),linux)
-	$(eval OUTFILE := $(shell sha256sum $(BINARY_PATH)))
-else ifeq ($(OS),darwin)
-	$(eval OUTFILE := $(shell shasum -a 256 $(BINARY_PATH)))
-else ifeq ($(OS),windows)
-	$(eval OUTFILE := $(shell PowerShell.exe Get-FileHash $(BINARY_PATH)))
-else
-	$(error Unsupported: $(NATIVE))
-endif
-	@echo "Binary created : $(OUTFILE)"
-
+deps:
+	$(GOGET) github.com/brimstone/go-shellcode
