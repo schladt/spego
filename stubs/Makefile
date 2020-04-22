@@ -28,5 +28,3 @@ else
 endif
 	@echo "Binary created : $(OUTFILE)"
 
-deps:
-	$(GOGET) github.com/jteeuwen/go-bindata/...

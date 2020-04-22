@@ -30,3 +30,4 @@ endif
 
 deps:
 	$(GOGET) gopkg.in/yaml.v2
+	$(GOGET) github.com/jteeuwen/go-bindata/...

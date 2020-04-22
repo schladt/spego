@@ -18,9 +18,10 @@ import (
 
 // Config - struct to store configuration
 type Config struct {
+	PayloadType string            `yaml:"PayloadType"`
+	PayloadArch string            `yaml:"PayloadArch"`
 	PayloadPath string            `yaml:"PayloadPath"`
 	OutputPath  string            `yaml:"OutputPath"`
-	StubPath    string            `yaml:"StubPath"`
 	Magic       string            `yaml:"Magic"`
 	Password    string            `yaml:"Password"`
 	Envs        map[string]string `yaml:"Envs"`
@@ -43,6 +44,11 @@ func main() {
 		log.Fatalf("Unable to parse config file: %v", err)
 	}
 
+	// check magic number
+	if len(config.Magic) != 64 {
+		log.Fatalln("Magic string must be 64 characters.")
+	}
+
 	fmt.Printf("Using payload path of %s\n", config.PayloadPath)
 
 	// Read payload
@@ -53,11 +59,25 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// Read stub
-	log.Printf("Reading stub %s", config.StubPath)
-	stub, err := ioutil.ReadFile(config.StubPath)
+	// Read stub from bindata
+	var stubName string
+	if config.PayloadType == "executable" {
+		stubName = "stubs/bin/spego-stub"
+	} else {
+		log.Fatalln("Unknown payload type.")
+	}
+
+	if config.PayloadArch == "windows-amd64" {
+		stubName = fmt.Sprintf("%s-%s", stubName, "windows-amd64.exe")
+	} else if config.PayloadArch == "windows-386" {
+		stubName = fmt.Sprintf("%s-%s", stubName, "windows-386.exe")
+	} else {
+		log.Fatalln("Unknown payload arch.")
+	}
+
+	stub, err := Asset(stubName)
 	if err != nil {
-		log.Println("Unable to read stub file.")
+		log.Printf("Unable to open asset: %s", stubName)
 		log.Fatalln(err)
 	}
 
@@ -141,7 +161,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// write mage string ... again 
+	// write mage string ... again
 	if _, err := f.Write([]byte(config.Magic)); err != nil {
 		log.Println("Unable to write third delimiter.")
 		log.Fatalln(err)
