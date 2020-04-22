@@ -30,6 +30,7 @@ Building is NOT required as all options are configured in the yaml config (unles
   1. Build program stubs
   ```
   cd stubs
+  make deps
   make
   cd ..
   ```
@@ -39,6 +40,7 @@ Building is NOT required as all options are configured in the yaml config (unles
   ```
   3. Build spego main encrypter
   ```
+  make deps
   make
   ```
 - Enjoy!
